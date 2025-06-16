@@ -1,0 +1,11 @@
+version: '3.8'
+
+services:
+  jekyll:
+    image: jekyll/jekyll:3.8
+    command: jekyll serve --watch --drafts --future --livereload
+    ports:
+      - "4000:4000"       # Serve site on http://localhost:4000
+      - "35729:35729"     # LiveReload WebSocket
+    volumes:
+      - .:/srv/jekyll     # Mount current dir (your Jekyll site)
