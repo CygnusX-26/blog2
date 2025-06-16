@@ -1,0 +1,86 @@
+---
+layout: post
+title: "Pwning on apple silicon"
+date: 2025-01-01 00:00:00
+categories: tutorials
+tags: tutorial pwn mac apple-silicon 2025
+excerpt: A short guide on how to use gdb on x86 binarys while on arm.
+mathjax: false
+---
+* content
+{:toc}
+
+Consider the following scenario:
+
+You really want to learn pwn but you can't install gdb on your [Apple silicon](https://support.apple.com/en-us/116943) mac... Alright, surely you can just emulate an x86 system in Docker and run gdb there. You heard about [Rosetta 2](https://en.wikipedia.org/wiki/Rosetta_(software)) and its debug server seems like the perfect solution.
+
+You try it out and... find out [Rosetta's debug server has known issues in Docker](https://github.com/docker/for-mac/issues/6921).
+
+Maybe qemu works better? You fire up gdb and are met with 
+`ptrace: Function not implemented`.
+
+Still want to pwn? Then keep reading!
+
+We can combine [Docker](https://www.docker.com/) and [Colima](https://github.com/abiosoft/colima) (short for Container Linux Machine) to create a perfect world where gdb works.
+
+I created a Docker image specifically meant to be used for Pwn CTF challenges. It comes preinstalled with everything pwn related I could think of. It is inspired by [Sigpwny's pwn-docker](https://github.com/sigpwny/pwn-docker), but uses colima, has many package upgrades, and uses zsh!
+
+## Getting Started
+
+Pls star 🤩 the [github repository](https://github.com/CygnusX-26/pwn).
+
+I'll walk through the `README.md` here.
+
+### Prerequesites 
+You need to install [Docker](https://www.docker.com/) and [Colima](https://github.com/abiosoft/colima). Both can be done using [Homebrew](https://brew.sh/).
+
+```sh
+brew install docker
+brew install colima
+```
+
+Next, clone the github repository.
+```sh
+git clone https://github.com/CygnusX-26/pwn.git
+cd pwn
+```
+
+Start colima with
+```sh
+./start-colima.sh
+```
+
+This should create a new Docker context called `colima-x64`
+
+{: .note }
+You need to use this docker context for everything to work properly. Check which context you are using with `docker context ls`, and switch to colima with `docker context use colima-x64`. You can always switch back if you no longer want to use the colima context.
+
+Start the docker container with
+```sh
+./start.sh
+```
+This will pull the [cygnusx26/pwn](https://hub.docker.com/repository/docker/cygnusx26/pwn/general) docker image from Dockerhub. 
+
+{: .note }
+The script will ask if you would like to mount a directory to `/ctf` inside the container. You might want this for easy file access, or to use your favorite GUI text editor to write a script, then run it inside the container.
+
+Once the Docker container is running, there will be an open ssh port at `localhost:2222`.
+
+You can connect to the Docker container with
+```sh
+./connect.sh
+```
+
+This should leave you inside the container. 
+
+[pwndbg](https://github.com/pwndbg/pwndbg), [tmux](https://github.com/tmux/tmux/wiki), and [pwntools](https://github.com/Gallopsled/pwntools) all come preinstalled in this image.
+
+Have fun pwning!
+
+{: .warning}
+This project is a WIP, but currently should be working. Many things are subject to change, and contributions are welcome!
+
+
+
+
+

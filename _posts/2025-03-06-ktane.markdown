@@ -1,0 +1,20 @@
+---
+layout: post
+title: "Keep Typing and Nobody Explodes"
+date: 2025-03-06 12:00:00
+categories: projects
+tags: typescript nsjail next.js boilermake 2025
+mathjax: false
+---
+* content
+{:toc}
+
+![terrain](../../../../images/ktane.png) 
+
+Inspired by Keep Talking And Nobody Explodes, two players must work together to finish their provided code samples—one controlling the editor, the other viewing the keybind documentation. Can you pass your test cases before your code is deployed to prod?
+
+
+
+
+
+Check out the [source](https://github.com/ky28059/ktane)

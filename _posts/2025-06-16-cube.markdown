@@ -1,0 +1,20 @@
+---
+layout: post
+title: "cube"
+date: 2025-06-16 12:55:00
+categories: projects
+tags: c graphics ncurses 2025
+mathjax: false
+---
+* content
+{:toc}
+
+![cube](../../../../images/cube.gif) 
+
+Rendering a spinning cube in the terminal using C.
+
+
+
+
+
+Check out the [source](https://github.com/CygnusX-26/cube)

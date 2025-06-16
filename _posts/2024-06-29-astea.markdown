@@ -1,0 +1,102 @@
+---
+layout: post
+title: "Astea - uiuctf2024"
+date: 2024-06-29 00:00:00
+categories: writeups
+tags: misc pyjail 2024
+excerpt: I heard you can get sent to jail for refusing a cup of tea in England.
+mathjax: false
+---
+* content
+{:toc}
+470 points - 52 solves
+
+**Author**: Cameron
+
+### Challenge Description
+
+
+`I heard you can get sent to jail for refusing a cup of tea in England.`
+
+The challenge source is provided below:
+```python
+import ast
+
+def safe_import():
+  print("Why do you need imports to make tea?")
+
+def safe_call():
+  print("Why do you need function calls to make tea?")
+
+class CoolDownTea(ast.NodeTransformer):
+  def visit_Call(self, node: ast.Call) -> ast.AST:
+    return ast.Call(func=ast.Name(id='safe_call', ctx=ast.Load()), args=[], keywords=[])
+  
+  def visit_Import(self, node: ast.AST) -> ast.AST:
+    return ast.Expr(value=ast.Call(func=ast.Name(id='safe_import', ctx=ast.Load()), args=[], keywords=[]))
+  
+  def visit_ImportFrom(self, node: ast.ImportFrom) -> ast.AST:
+    return ast.Expr(value=ast.Call(func=ast.Name(id='safe_import', ctx=ast.Load()), args=[], keywords=[]))
+  
+  def visit_Assign(self, node: ast.Assign) -> ast.AST:
+    return ast.Assign(targets=node.targets, value=ast.Constant(value=0))
+  
+  def visit_BinOp(self, node: ast.BinOp) -> ast.AST:
+    return ast.BinOp(left=ast.Constant(0), op=node.op, right=ast.Constant(0))
+
+code = input('Nothing is quite like a cup of tea in the morning: ').splitlines()[0]
+cup = ast.parse(code)
+cup = CoolDownTea().visit(cup)
+ast.fix_missing_locations(cup)
+
+
+exec(compile(cup, '', 'exec'), {'__builtins__': {}}, {'safe_import': safe_import, 'safe_call': safe_call})
+```
+
+### Approach
+
+After some quick analysis of the code, we realize that the program takes in one line of python code, parses it into an abstract syntax tree, and checks if we have any import nodes, function call nodes, assignment nodes, or binary operation nodes. If we have function call nodes, the call is replaced with a no argument call to the `safe_call` function. If we have imports the same is done to the `safe_import` function.
+
+An assignment node is something like `x = 5` and a binary operation would be something like `x << 5`, in the assignment case, the right side is replaced with a zero. And in the binop case both sides are set to zero.
+
+After these checks, our code is run under `exec` with an empty set of builtins and the `safe_import` and `safe_call` functions defined.
+
+My first step in most pyjails is to recreate the deleted builtins module. This is easily done with `safe_import.__builtins__` or `safe_call.__builtins__`.
+
+Now the next issue is figuring out a way to call a function, as whatever function we call, gets replaced with a call to the `safe_import` function with no arguments.
+
+My next idea was to use the `safe_call` function against the challenge. If we can find some way to modify the `safe_call` function to be some kind of builtin, we can now call functions by simply redefining `safe_call`.
+
+Lets try an example of this below:
+```python
+safe_call=safe_call.__builtins__['print'];a()
+```
+
+The function call `a()` gets replaced with a call to `safe_call` which is now the `print` function. This is a good start, but we still have an issue of not being able to set parameters to the funciton, and also we cannot actually use assignment nodes to set variables.
+
+After some research, I stumbled upon [this](https://docs.python.org/3/library/ast.html#abstract-grammar), and we can see there are actually two other assignment nodes, `AugAssign` and `AnnAssign`. The `AugAssign` node is an augmented assignment, like `x += 5`, and the `AnnAssign` node is an annotated assignment, like `x: int = 5`.
+
+The `AugAssign` node is perfect for our use case, as we can set the annotation to whatever we want.
+
+Our new updated payload that works on remote looks like this:
+
+```python
+safe_call:0=safe_call.__builtins__['print'];a()
+```
+
+Python doesnt care what your annotation is, so for payload shortness I just put 0.
+
+Ok, now I just have to read `flag.txt` using only functions that take no parameters.
+
+I had made a python challenge in the past that involved reading from a file using the `license()` function in python. This works perfectly here, because `license()` takes no parameters.
+
+Typically this function prints out the python license, but it actually reads the license from a predefined file. If I just change what file `license()` reads from to `flag.txt`, I can read the flag.
+
+The license function has an attribute `_Printer__filenames` which is a list of files that it can read from. I can just change this list to `['flag.txt']` and then call `license()` to read the flag.
+
+The final payload looks like this:
+```python
+safe_call:0=safe_import.__builtins__['license'];safe_call._Printer__filenames:0=['flag.txt'];a()
+```
+
+uiuctf{maybe_we_shouldnt_sandbox_python_2691d6c1}
