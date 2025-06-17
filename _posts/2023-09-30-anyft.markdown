@@ -3,7 +3,7 @@ layout: post
 title:  "aNyFT - buckeyectf2023"
 date:   2023-09-30 00:00:00
 categories: writeups
-tags: blockchain 2023
+tags: blockchain
 excerpt: NFTs made accessible for everyone, even those who shouldn't have access.
 mathjax: false
 ---

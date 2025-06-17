@@ -3,7 +3,7 @@ layout: post
 title: "Our Purdue Plan"
 date: 2024-12-05 12:00:00
 categories: projects
-tags: elixir phoenix postgresql 2024
+tags: elixir phoenix postgresql
 mathjax: false
 ---
 * content

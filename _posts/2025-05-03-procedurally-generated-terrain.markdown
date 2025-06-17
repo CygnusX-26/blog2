@@ -3,7 +3,7 @@ layout: post
 title: "Procedurally Generated Terrain"
 date: 2025-05-03 12:00:00
 categories: projects
-tags: c++ graphics opengl shaders 2025
+tags: c++ graphics opengl
 mathjax: false
 ---
 * content

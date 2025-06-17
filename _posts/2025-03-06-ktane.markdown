@@ -3,7 +3,7 @@ layout: post
 title: "Keep Typing and Nobody Explodes"
 date: 2025-03-06 12:00:00
 categories: projects
-tags: typescript nsjail next.js boilermake 2025
+tags: typescript next.js boilermake
 mathjax: false
 ---
 * content

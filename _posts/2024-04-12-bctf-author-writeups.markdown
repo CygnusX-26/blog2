@@ -3,7 +3,7 @@ layout: post
 title: "Author Writeups - b01lersctf 2024"
 date: 2024-04-12 23:00:00
 categories: writeups
-tags: misc web blockchain pyjail 2024 author
+tags: misc web blockchain pyjail author
 excerpt: My author writeups for b01lersctf 2024
 mathjax: false
 ---

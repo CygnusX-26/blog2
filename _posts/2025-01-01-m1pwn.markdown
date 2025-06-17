@@ -3,7 +3,7 @@ layout: post
 title: "Pwning on apple silicon"
 date: 2025-01-01 00:00:00
 categories: tutorials
-tags: tutorial pwn mac apple-silicon 2025
+tags: pwn mac apple-silicon
 excerpt: A short guide on how to use gdb on x86 binarys while on arm.
 mathjax: false
 ---

@@ -3,7 +3,7 @@ layout: post
 title: "funny-lfr - sekaictf2024"
 date: 2024-08-23 16:00:00
 categories: writeups
-tags: web starlette race 2024
+tags: web starlette race
 excerpt: Race condition with symlinks in starlette leads to env read
 mathjax: false
 ---

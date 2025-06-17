@@ -3,7 +3,7 @@ layout: post
 title: "msFrogOfWar3 - corctf2024"
 date: 2024-07-27 00:00:00
 categories: writeups
-tags: misc stockfish chess 2024
+tags: misc stockfish chess
 mathjax: false
 ---
 * content

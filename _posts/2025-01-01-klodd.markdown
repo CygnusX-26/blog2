@@ -3,7 +3,7 @@ layout: post
 title: "Klodd"
 date: 2024-04-15 21:00:00
 categories: tutorials
-tags: tutorial klodd 2025 kubernetes docker hosting
+tags: klodd kubernetes docker
 excerpt: Klodd is a service that makes it easy to deploy per-team instances for CTF challenges. Though the service is great, the documentation for new CTF developers is less than ideal.
 mathjax: false
 ---

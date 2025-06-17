@@ -3,7 +3,7 @@ layout: post
 title: "Cryptum"
 date: 2023-01-22 00:00:00
 categories: projects
-tags: c tillitis typescript svelte boilermake 2023
+tags: c tillitis typescript svelte boilermake
 mathjax: false
 ---
 * content

@@ -3,7 +3,7 @@ layout: post
 title: "CTFtime Cards"
 date: 2025-02-25 00:00:00
 categories: projects
-tags: typescript svg 2025
+tags: typescript svg
 mathjax: false
 ---
 * content

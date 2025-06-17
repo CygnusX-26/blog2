@@ -4,7 +4,7 @@ title:  "Blacklisted - b01lersctf 2023"
 date:   2023-03-17 22:00:00
 categories: writeups
 tags: misc pyjail jail 2023 author
-excerpt: My author writeup for the blacklisted challenge in b01lersctf 2023
+excerpt: My author writeup for the blacklisted challenge in b01lersctf
 mathjax: false
 ---
 * content

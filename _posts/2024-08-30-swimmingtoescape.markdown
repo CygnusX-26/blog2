@@ -3,7 +3,7 @@ layout: post
 title: "Swimming to Escape - csctf2024"
 date: 2024-08-30 16:00:00
 categories: writeups
-tags: misc esolang 2024
+tags: misc esolang
 excerpt: Teach the fish how to escape
 mathjax: false
 ---

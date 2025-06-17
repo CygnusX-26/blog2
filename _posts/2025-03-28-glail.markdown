@@ -3,7 +3,7 @@ layout: post
 title: "glail - dicequals 2025"
 date: 2025-03-28 21:00:00
 categories: writeups
-tags: misc jail gleam 2025
+tags: misc jail gleam
 excerpt: "> pub fn main() { \"⭐\" }"
 mathjax: false
 ---

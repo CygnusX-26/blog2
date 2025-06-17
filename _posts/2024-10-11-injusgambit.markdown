@@ -3,7 +3,7 @@ layout: post
 title: "Inju's Gambit - tcp1p 2024"
 date: 2024-10-11 12:00:00
 categories: writeups
-tags: blockchain 2024
+tags: blockchain
 excerpt: Inju owns all the things in the area, waiting for one worthy challenger to emerge. Rumor said, that there many ways from many different angles to tackle Inju. Are you the Challenger worthy to oppose him?
 mathjax: false
 ---
