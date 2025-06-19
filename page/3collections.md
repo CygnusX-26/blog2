@@ -24,9 +24,8 @@ A collection of bookmarks. Small for now, hope it will grow.
  - [Flask's debug mode is insecure](https://github.com/wdahlenburg/werkzeug-debug-console-bypass)
  - [b01lers ctf template](https://github.com/b01lers/rich-ctf-template)
 
-## Graphics
- - [Understanding Barycentric Coordinates](https://medium.com/@alok.gandhi2002/barycentric-coordinates-47a0f4776f73)
- - [The graphics pipeline](https://leeyngdo.github.io/blog/computer-graphics/2024-02-29-graphics-pipeline/)
+## Useful
+ - [Zed](https://zed.dev/debugger)
 
 ## Math
  - [Group Actions](https://e.math.cornell.edu/people/vogeli/assets/pdf/group-actions.pdf)
