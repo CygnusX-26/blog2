@@ -1,0 +1,20 @@
+---
+layout: post
+title: "engine"
+date: 2025-06-16 12:55:00
+categories: projects
+tags: rust graphics
+mathjax: false
+---
+* content
+{:toc}
+
+![shuttle](../../../../images/shuttle.gif) 
+
+A graphics engine written from scratch in rust that can load .obj files.
+
+
+
+
+
+Check out the [source](https://github.com/CygnusX-26/engine)
