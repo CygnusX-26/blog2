@@ -9,7 +9,7 @@ mathjax: false
 * content
 {:toc}
 
-![shuttle](../../../../images/shuttle.gif) 
+![shuttle](../../../../images/shuttle-small.gif) 
 
 A graphics engine written from scratch in rust that can load .obj files.
 
