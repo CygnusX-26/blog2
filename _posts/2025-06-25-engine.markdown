@@ -4,17 +4,116 @@ title: "engine"
 date: 2025-06-16 12:55:00
 categories: projects
 tags: rust graphics
-mathjax: false
+mathjax: true
 ---
 * content
 {:toc}
 
-![shuttle](../../../../images/sky.gif) 
+![skyscraper](../../../../images/sky.gif) 
 
-A graphics engine written from scratch in rust that can load .obj files.
-
-
+A graphics engine written from scratch in rust that can load .obj/.mtl files.
 
 
+
+
+# Building a graphics engine from scratch (WIP)
+
+
+## Introduction
+
+Graphics always seemed like one of those deep, complex corners of computer science. So for the longest time, I avoided it. It felt intimidating—like something reserved for pioneers in the field or hardcore game engine devs. But one slow day at work, while watching test cases crawl by, I decided to take a stab at it as a side project. That little spark eventually grew into a basic graphics engine capable of rendering `.obj` and `.mtl` files.
+
+This blog post is my attempt to break down some of the fundamental concepts behind computer graphics with diving too deeply into the math.I'll try to explain in a way that someone with minimal experience can still follow and (hopefully) find enjoyable.
+
+Quick side note: the engine I wrote runs entirely on the CPU. I avoided shaders on purpose—not because I didn’t want performance, but because I wanted to learn what’s actually going on under the hood. Sure, it’s slower (especially on larger meshes), but the trade-off was worth it for the learning experience.
+
+## Important Concepts
+
+The following few sections explain some foundational concepts that readers may find confusing in later sections. These concepts will serve as primitives that are taken for granted later on.
+
+### Homogeneous Coordinates
+
+When you think of rendering something in 3D, you'd probably imagine the standard *cartesian coordinate system*:
+
+$$(x, y, z)$$
+
+But when working with graphics it's often more practical to use *homogenous coordinates*:
+
+$$(x, y, z, w)$$
+
+The extra value, `w` may seem confusing, but it plays an important role in how objects show up on the screen.
+
+To understand what this value actually means, lets simplify and zoom into two dimensional homogenous coordinates:
+
+$$(x, y, w)$$
+
+Imagine a projector casting a 2D image onto a wall. As the projector moves closer to the wall, the image shrinks. Move it farther away, and the image appears larger. Even though the image itself is flat and 2D, its appearance depends on a third factor: the distance from the wall. We can represent this variable as `w`.
+
+So in 2D homogeneous coordinates, `w` acts like a scale factor. It determines how big or small the projected points should appear once transformed into screen space.
+
+Now, scale that concept up to 3D. It’s a bit trickier to visualize, but the idea is the same. That `w` value lets us handle things like perspective projection and affine transformations more elegantly. In fact, most of the time, we will convert back to cartesian coordinates with something called a *perspective divide* which i'll cover later on.
+
+> TL;DR: Homogeneous coordinates contain an extra variable `w` which helps with matrix math and makes perspective projection possible.
+
+### Barycentric Coordinates
+
+In graphics, we usually break everything down into triangles. Why triangles? Because they’re the simplest possible polygon. You can’t make a shape with fewer points—and better yet, you can construct pretty much any complex surface by combining a bunch of them. So we can solve all our rendering problems through triangles, and decompose larger shapes into more triangles.
+
+![here](https://upload.wikimedia.org/wikipedia/commons/e/e0/%D0%A2%D1%80%D0%B8%D0%B0%D0%BD%D0%B3%D1%83%D0%BB%D1%8F%D1%86%D0%B8%D1%8F.svg)
+
+Once we’re working with triangles, one of the fundamental problems we have to solve is this:
+
+    Given a point, how do we know if it lies inside a triangle or not?
+
+This question is at the heart of rasterization. And that’s where barycentric coordinates come in.
+
+Say we have a triangle composed of three verticies $(A, B, C)$ and a point $P$.
+
+By connecting $P$ with each of $A$, $B$, $C$, we create three smaller triangles.
+
+![barycentric](../../../../images/barycentric.png)
+
+If $P$ is **inside** of $(A, B, C)$ you’ll notice that the **sum of the areas** of these three sub-triangles is exactly equal to the area of the original triangle.
+
+However, if $P$ is **outside** of $(A, B, C)$:
+
+![barycentric2](../../../../images/barycentric2.png)
+
+We notice the sum of the areas of the three sub-triangles is **greater** than the area of $(A, B, C)$.
+
+Lets call area of the three subtriangles $T1$, $T2$ and $T3$. If $P$ lies inside $(A, B, C)$:
+
+$$T1 + T2 + T3 = Area(A, B, C)$$
+
+$$\frac{T1}{Area(A, B, C)} + \frac{T2}{Area(A, B, C)} + \frac{T3}{Area(A, B, C)} = 1$$
+
+Say $\alpha$, $\beta$ and $\gamma$ are the three components of this sum:
+
+$$\alpha = \frac{T1}{Area(A, B, C)}$$
+
+$$\beta = \frac{T2}{Area(A, B, C)}$$
+
+$$\gamma = \frac{T3}{Area(A, B, C)}$$
+
+Then,
+$$\alpha + \beta + \gamma = 1$$
+
+So every point relative to this triangle will have its own unique $\alpha$, $\beta$ and $\gamma$. If $\alpha$, $\beta$ and $\gamma$ are all less than 1 (because they are ratios of the sub-triangle to the area of the triangle) and greater than 0, we know the point is inside the triangle.
+
+We call $\alpha$, $\beta$ and $\gamma$ the barycentric coordinates of the point $P$ relative to triangle $(A, B, C)$.
+
+This simple concept becomes incredibly powerful when we want to interpolate values across the surface of a triangle—like color, texture coordinates, normals, or even depth. Barycentric coordinates help us "blend" data smoothly across a surface.
+
+> TL;DR: Every point $P$ relative to a triangle has barycentric coordinates $\alpha$, $\beta$ and $\gamma$. If all three of these values are between 0 and 1 the point lies in the triangle, otherwise it lies outside the triangle.
+
+## The Graphics Pipeline
+
+## Loading .obj and .mtl files
+
+## Texture Mapping
+
+## Lighting and Shading
+
+## Optimization
 
 Check out the [source](https://github.com/CygnusX-26/engine)
