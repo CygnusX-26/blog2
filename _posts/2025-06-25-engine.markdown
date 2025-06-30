@@ -21,7 +21,7 @@ A graphics engine written from scratch in rust that can load .obj/.mtl files.
 
 ## Introduction
 
-Graphics always seemed like one of those deep, complex corners of computer science. So for the longest time, I avoided it. It felt intimidating—like something reserved for pioneers in the field or hardcore game engine devs. But one slow day at work, while watching test cases crawl by, I decided to take a stab at it as a side project. That little spark eventually grew into a basic graphics engine capable of rendering `.obj` and `.mtl` files.
+Graphics always seemed like one of those deep, complex corners of computer science. So for the longest time, I avoided it. It felt intimidating, but one day at work, while watching test cases crawl by, I decided to take a stab at it as a side project. That eventually turned into a basic graphics engine capable of rendering `.obj` and `.mtl` files.
 
 This blog post is my attempt to break down some of the fundamental concepts behind computer graphics with diving too deeply into the math.I'll try to explain in a way that someone with minimal experience can still follow and (hopefully) find enjoyable.
 
