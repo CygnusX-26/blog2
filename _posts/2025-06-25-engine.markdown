@@ -21,9 +21,7 @@ A graphics engine written from scratch in rust that can load .obj/.mtl files.
 
 ## Introduction
 
-Graphics always seemed like one of those complex corners of computer science. So I never really gave it a try. One day I felt like learning more and that eventually turned into a basic graphics engine capable of rendering `.obj` and `.mtl` files.
-
-This blog post is my attempt to break down some of the fundamental concepts behind computer graphics with diving too deeply into the math.I'll try to explain in a way that someone with minimal experience can still follow and (hopefully) find enjoyable.
+This blog post is my attempt to break down some of the fundamental concepts behind computer graphics with diving too deeply into the math. I'll try to explain in a way that someone with minimal experience can still follow and (hopefully) find enjoyable.
 
 Quick side note: the engine I wrote runs entirely on the CPU. I avoided shaders on purpose—not because I didn’t want performance, but because I wanted to learn what’s actually going on under the hood. Sure, it’s slower (especially on larger meshes), but the trade-off was worth it for the learning experience. 
 
@@ -67,7 +65,7 @@ Once we’re working with triangles, one of the fundamental problems we have to 
 
     Given a point, how do we know if it lies inside a triangle or not?
 
-This question is at the heart of rasterization. And that’s where barycentric coordinates come in.
+That’s where barycentric coordinates come in.
 
 Say we have a triangle composed of three verticies $(A, B, C)$ and a point $P$.
 
@@ -148,9 +146,93 @@ Something important to keep in mind is the winding order of your triangles. That
 
 Why does this matter? Because the winding order is used to calculate the normal vector, which is the direction pointing straight out from the surface of the triangle. It helps define which side is the “front” of the face. If the winding isn't consistent, some normals might point outward while others point inward, which can cause all kinds of rendering issues like weird lighting or backface culling glitches.
 
+[Here](https://github.com/CygnusX-26/engine/blob/master/src/main.rs#L442) is the line where I load meshes from `.obj` and `.mtl` files. I wrote the parser for these files from scratch in `loader.rs` but the main takeaway is that this returns a list of verticies, triangles and materials that make up my mesh.
+
 ### The model matrix
 
-Now that we've got a general construction of what to render, 
+Once we’ve got a basic idea of what to render, the next step is to actually do something with our mesh. That means we can translate it, rotate it, and scale it all using **matricies**.
+
+Now, if you’re not super familiar with matrices, just think of them as a neat way to apply transformations (like moving or rotating) to points in 3D space.
+
+For example rotating some [homogeneous](#homogeneous-coordinates) vector $(x, y, z, w)$ by $\theta$ degrees around the y-axis can just be represented by the following matrix multiplication.
+
+$$
+\begin{bmatrix}
+\cos(\theta) & 0 & \sin(\theta) & 0\\
+0 & 1 & 0  & 0\\
+-\sin(\theta) & 0 & \cos(\theta) & 0 \\
+0 & 0 & 0 & 1
+\end{bmatrix} * 
+\begin{bmatrix}
+x \\
+y \\
+z \\
+w \\
+\end{bmatrix}$$
+
+Don't worry if you dont understand the math here. The result is just a new 4x1 vector that gives you the rotated coordinates.
+
+Now, did you notice that the rotation matrix is 4x4 instead of the usual 3x3? That’s because we’re using [homogeneous](#homogeneous-coordinates) coordinates, which include that extra `w` component. This lets us pack translation, rotation, and scaling into a single matrix.
+
+So instead of applying transformations one by one, we can combine them into one matrix and apply it all at once. Super efficient—and it keeps things clean and manageable when rendering 3D scenes.
+
+[Here](https://github.com/CygnusX-26/engine/blob/master/src/main.rs#L113) is the portion of my code where I apply a simple translation matrix onto my mesh.
+
+### The view matrix
+
+So, we’ve created a mesh and applied whatever transformations we needed. Now comes the next step in the graphics pipeline: setting up the camera.
+
+Up until this point, everything has been in what's often called `model space`. That just means the mesh exists in its own local coordinate system. You can think of it like its own little world. But now we need to shift that into something more useful: view space.
+
+Remember, matrices represent transformations. The view matrix is no different. Its job is to take everything from model space and transform it into view space which is basically the scene as the camera would see it.
+
+When creating a view matrix we have a few properties of the camera to consider:
+
+    Where the camera is
+    Where the camera looks at.
+    Which direction should be up.
+
+That last one might seem a little strange at first. Why would we need to tell the camera what `up` is?
+
+Well, think about it like this: if you only give the camera a position and a target, there are still countless ways it could orient itself and still be pointing at the target. It could be upright, tilted, or even upside down. The up vector removes that ambiguity. It locks in the roll of the camera so that the world isn’t accidentally rendered sideways or flipped.
+
+
+From these three parameters, we need to compute an orthogonal basis, or just three perpendicular vectors which can serve as the basis for transformation into the camera's view. 
+
+The following section contains a snippet of code deriving the view matrix so feel free to skip it if you just want the general idea of how things work. I used rusts `nalgebra` library's built in `look_at_rh` function to generate it in my code.
+
+```rs
+/// Creates a right-handed look-at view matrix
+pub fn look_at(eye: Point3<f32>, target: Point3<f32>, up: Vector3<f32>) -> Matrix4<f32> {
+    let forward = (target - eye).normalize();
+    let right = up.cross(&forward).normalize();
+    let up = forward.cross(&right);
+
+    let rotation = Matrix4::new(
+        right.x,    up.x,    -forward.x,    0.0,
+        right.y,    up.y,    -forward.y,    0.0,
+        right.z,    up.z,    -forward.z,    0.0,
+        0.0,        0.0,     0.0,           1.0,
+    );
+
+    let translation = Matrix4::new_translation(&-eye.coords);
+    rotation * translation
+}
+```
+
+So just to review our graphics pipeline so far. Given vertex $p$, model matrix $M$, and view matrix $V$:
+
+$$ view = V * M * p$$
+
+[Here](https://github.com/CygnusX-26/engine/blob/master/src/main.rs#L416) is an example of the view matrix in my code. I implemented mouse controls and wasd movement so there are some key handling functions that simply just update the camera's position and target.
+
+If you aren't following the exact math, thats okay! Just know the $view$ value from above is the point $p$ transformed by some matrix, and then transformed into the camera's point of view.
+
+### The projection matrix
+
+
+
+
 
 ## Loading .obj and .mtl files
 
