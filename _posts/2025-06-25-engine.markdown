@@ -106,9 +106,51 @@ We call $\alpha$, $\beta$ and $\gamma$ the barycentric coordinates of the point 
 
 This simple concept becomes incredibly powerful when we want to interpolate values across the surface of a triangle—like color, texture coordinates, normals, or even depth. Barycentric coordinates help us "blend" data smoothly across a surface.
 
-> TL;DR: Every point $P$ relative to a triangle has barycentric coordinates $\alpha$, $\beta$ and $\gamma$. If all three of these values are between 0 and 1 the point lies in the triangle, otherwise it lies outside the triangle.
+> TL;DR: Every point $P$ relative to a triangle can be expressed using barycentric coordinates $\alpha, \beta, \gamma$. If all three are between 0 and 1 and $\alpha + \beta + \gamma = 1$, then the point lies **inside** the triangle; otherwise, it's **outside**. Since these values vary across the triangle, they’re super useful for interpolating things like color, position, or texture later on.
 
 ## The Graphics Pipeline
+
+This section will give a broad overview of the journey data takes through the graphics pipeline and eventually gets displayed on a screen.
+
+### Building a mesh
+
+In the world of 3D graphics, before you can render (i.e., visually display) anything on screen, you first need to define the shape or object you want to render. 
+
+A `Mesh` is essentially a blueprint for a 3D object. It’s made up of:
+
+    Vertices: Points in 3D space.
+
+    Triangles: Groups of three vertices that form the faces of the object.
+
+    Materials (covered later): Information about how the surface of the mesh should look—color, texture, shininess, etc.
+
+Most modern 3D engines (like Unity, Unreal, or even WebGL) follow this same standard structure.
+
+The following is an example of a simple quadrilateral mesh made up of two triangles.
+
+![quad_mesh](../../../../images/quad_mesh.png)
+
+Here we could define the following labeled verticies:
+
+$$A \to (0, 0)$$
+
+$$B \to (1, 0)$$
+
+$$C \to (0, -1)$$
+
+$$D \to (1, -1)$$
+
+Then our list of triangles could look like:
+
+$$(A, B, C), (B, D, C)$$
+
+Something important to keep in mind is the winding order of your triangles. That is, the order in which you list the vertices (either clockwise or counterclockwise). This order must stay **consistent** across every face in the mesh.
+
+Why does this matter? Because the winding order is used to calculate the normal vector, which is the direction pointing straight out from the surface of the triangle. It helps define which side is the “front” of the face. If the winding isn't consistent, some normals might point outward while others point inward, which can cause all kinds of rendering issues like weird lighting or backface culling glitches.
+
+### The model matrix
+
+Now that we've got a general construction of what to render, 
 
 ## Loading .obj and .mtl files
 
