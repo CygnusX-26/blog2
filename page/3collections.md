@@ -11,6 +11,11 @@ type: page
 
 A collection of bookmarks. Small for now, hope it will grow.
 
+## Rust
+ - [Common rust lifetime misconceptions](https://github.com/pretzelhammer/rust-blog/blob/master/posts/common-rust-lifetime-misconceptions.md)
+ - [Rust memory container cheat sheet](https://github.com/usagi/rust-memory-container-cs)
+ - [Rust container cheat sheet](https://johnbsmith.github.io/Informatik/Rust/Dateien/Rust-container-cheat-sheet.pdf)
+
 ## Fun
  - [Php a fractal of bad design](https://eev.ee/blog/2012/04/09/php-a-fractal-of-bad-design/)
  - [93% of paint splatters are valid perl programs](https://www.mcmillen.dev/sigbovik/)
