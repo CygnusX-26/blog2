@@ -230,16 +230,14 @@ If you aren't following the exact math, thats okay! Just know the $view$ value f
 
 ### The projection matrix
 
-
+Once we've got our mesh transformed to the point of view of our camera, the next step is to project those verticies onto a 2D screen. Really all the `projection matrix` does is find a way to squeeze our 3D coordinates onto a 2D space. We call this `projecting` the mesh onto the screen.
 
 
 
 ## Loading .obj and .mtl files
-
 ## Texture Mapping
-
 ## Lighting and Shading
-
 ## Optimization
 
 Check out the [source](https://github.com/CygnusX-26/engine)
+
