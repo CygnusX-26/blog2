@@ -29,6 +29,9 @@ A collection of bookmarks. Small for now, hope it will grow.
  - [pwninit](https://github.com/io12/pwninit)
  - [Flask's debug mode is insecure](https://github.com/wdahlenburg/werkzeug-debug-console-bypass)
  - [b01lers ctf template](https://github.com/b01lers/rich-ctf-template)
+ - [grep.app](https://grep.app/search)
+ - [source graph](https://sourcegraph.com/search)
+ - [github code search](https://github.com/search?type=code)
 
 ## Comments
 
