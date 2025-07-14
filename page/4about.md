@@ -10,7 +10,7 @@ type: page
 {:toc}
 
 
-Current Senior at Purdue University and treasurer of the b01lers ctf team.
+Current Senior at Purdue University and treasurer of the b01lers ctf team. I'm most interested in computer graphics and security.
 
 I frequently create writeups for ctf challenges I solved that I thought were interesting and deserved a writeup. I also write some tutorials and have a couple of my recent projects displayed on this site. Feel free to look around!
 
