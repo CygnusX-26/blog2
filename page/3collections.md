@@ -23,6 +23,7 @@ A collection of bookmarks. Small for now, hope it will grow.
  - [Build your own X](https://github.com/codecrafters-io/build-your-own-x)
  - [1 billionth GitHub Repository](https://github.com/AasishPokhrel/shit/issues/1)
  - [Making Software](https://www.makingsoftware.com/)
+ - [MSCHF](https://mschf.com/)
 
 ## CTF
  - [pwnable.xyz](https://pwnable.xyz)
